@@ -20,13 +20,17 @@ find_package(OpenGL REQUIRED)
 add_subdirectory(3rdparty/SDL)
 include_directories(3rdparty/glad/include)
 include_directories(3rdparty/SDL/include)
+include_directories(3rdparty/stb/include)
 include_directories(${PROJECT_SOURCE_DIR}/3rdparty/glm)
 
-set(SOURCE_FILES 
-    src/main.cpp
-    src/main.h
-    3rdparty/glad/src/glad.c
-)
+set(SOURCE_FILES
+        source/src/main.cpp
+        source/inc/main.h
+        3rdparty/glad/src/glad.c
+        source/src/shader.cpp source/inc/shader.h
+        )
+
+include_directories(source/inc)
 
 set(SHADERS
     shaders/shader.vs

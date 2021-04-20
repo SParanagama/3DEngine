@@ -15,9 +15,6 @@
 #include <glm/gtc/type_ptr.hpp> // value_ptr
 #include <glm/gtx/rotate_vector.hpp>
 
-//#include <Magick++.h>
-
-#include "math3d.h"
 #include "utils.h"
 
 static int SCREEN_WIDTH = 1280;
@@ -281,7 +278,7 @@ void GetInput()
     int mouseY = SCREEN_HEIGHT/2 - y;
 
     inputState.prevMouseX = inputState.mouseX;
-    inputState.prevMouseY = inputState.mouseY; 
+    inputState.prevMouseY = inputState.mouseY;
     inputState.mouseX = mouseX;
     inputState.mouseY = mouseY;
     printf("Mouse X: %i, Mouse Y: %i\n", mouseX, mouseY);
