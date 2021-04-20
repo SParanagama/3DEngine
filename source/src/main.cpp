@@ -20,15 +20,6 @@
 static int SCREEN_WIDTH = 1280;
 static int SCREEN_HEIGHT = 720;
 
-GLuint ibo;
-GLuint vbo;
-GLuint vao;
-GLuint shaderProg;
-GLuint uniformLocation;
-
-GLuint textureObj;
-GLuint samplerLocation;
-
 struct InputState
 {
     bool upPressed, downPressed, leftPressed, rightPressed;
@@ -45,148 +36,6 @@ struct CameraState
     glm::vec3 target;
 };
 static CameraState cameraState = {};
-
-GLuint AddShader(const std::string& shader, GLenum shaderType)
-{
-    GLuint shaderObj = glCreateShader(shaderType);
-
-    // Our shader is consisted of one file
-    const GLchar* shaderSource = shader.c_str();
-    glShaderSource(shaderObj, 1, &shaderSource, NULL);
-    glCompileShader(shaderObj);
-
-    GLint success;
-    glGetShaderiv(shaderObj, GL_COMPILE_STATUS, &success);
-
-    if(!success) {
-        GLchar info[1024];
-        glGetShaderInfoLog(shaderObj, 1024, NULL, info);
-        fprintf(stderr, "Error compiling shader type %d: '%s'\n", shaderType, info);
-        exit(1);
-    }
-
-    glAttachShader(shaderProg, shaderObj);
-
-    return shaderObj;
-}
-
-void LoadAndCompileShaders()
-{
-    std::string vs,fs;
-    if(!ReadFile("shader.vs", vs)) {
-        std::cout << "Error reading file" << std::endl;
-        exit(1);
-    }
-
-    if(!ReadFile("shader.fs", fs)) {
-        std::cout << "Error reading file" << std::endl;
-        exit(1);
-    }
-
-    shaderProg = glCreateProgram();
-    if(shaderProg == 0) {
-        std::cout << "Error creating shader program" << std::endl;
-        exit(1);
-    }
-
-    AddShader(vs, GL_VERTEX_SHADER);
-    AddShader(fs, GL_FRAGMENT_SHADER);
-
-    glLinkProgram(shaderProg);
-
-    GLint status;
-    glGetProgramiv(shaderProg, GL_LINK_STATUS, &status);
-    if(!status) {
-        GLchar errorLog[1024];
-        glGetProgramInfoLog(shaderProg, 1024, NULL, errorLog);
-        fprintf(stderr, "Error linking shader program: '%s'\n", errorLog);
-        exit(1);
-    }
-
-    glValidateProgram(shaderProg);
-    glGetProgramiv(shaderProg, GL_VALIDATE_STATUS, &status);
-    if(!status) {
-        GLchar errorLog[1024];
-        glGetProgramInfoLog(shaderProg, 1024, NULL, errorLog);
-        fprintf(stderr, "Invalid shader program: '%s'\n", errorLog);
-        exit(1);
-    }
-
-    glUseProgram(shaderProg);
-
-    uniformLocation = glGetUniformLocation(shaderProg, "worldMat");
-    assert(uniformLocation != 0xFFFFFFFF);
-
-    samplerLocation = glGetUniformLocation(shaderProg, "gSampler");
-    assert(samplerLocation != 0xFFFFFFFF);
-}
-
-void PrepareAndBindVAO()
-{
-    glGenVertexArrays(1, &vao);
-
-    // We store our drawing state in 'vao'
-    glBindVertexArray(vao);
-    
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    
-    const unsigned int VERTEX_SIZE = 4*5;
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, 0);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE, (const GLvoid*)12);
-    assert (glGetError() != GL_INVALID_OPERATION);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureObj);
-    assert (glGetError() != GL_INVALID_OPERATION);
-
-    // TODO: VAO state?
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    assert (glGetError() != GL_INVALID_OPERATION);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    assert (glGetError() != GL_INVALID_OPERATION);
-    
-    glBindVertexArray(0);
-    //assert (glGetError() != GL_INVALID_OPERATION);
-    printf("Unbound Vertex Array Object...\n");
-}
-
-void PrepareIndexBuffer()
-{
-    unsigned int indices[] = { 0, 3, 1,
-                               1, 3, 2,
-                               2, 3, 0,
-                               0, 1, 2 };
-
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    assert (glGetError() != GL_INVALID_OPERATION);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    printf("Prepared Index Buffer...\n");
-}
-
-void PrepareVertexBuffers()
-{
-    // Vector3f vertexArr[4];
-    // vertexArr[0] = Vector3f(-1.0f, -1.0f, 0.5773f);
-    // vertexArr[1] = Vector3f(0.0f, -1.0f, -1.15475f);
-    // vertexArr[2] = Vector3f(1.0f, -1.0f, 0.5773f);
-    // vertexArr[3] = Vector3f(0.0f, 1.0f, 0.0f);
-
-    float vertexArr[20] = {
-        // Pos                   TexPos
-       -1.0f, -1.0f, 0.5773f,    0.0f, 0.0f,
-        0.0f, -1.0f, -1.15475f,  0.5f, 0.0f,
-        1.0f, -1.0f, 0.5773f,    1.0f, 0.0f,
-        0.0f,  1.0f, 0.0f,       0.5f, 1.0f 
-    };
-
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArr), vertexArr, GL_STATIC_DRAW);
-}
 
 void Render()
 {   
@@ -319,21 +168,6 @@ void Update()
     cameraState.up = glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
-void LoadAssets()
-{
-
-}
-
-void PrepareTextureObjects()
-{
-    glGenTextures(1, &textureObj);
-    glBindTexture(GL_TEXTURE_2D, textureObj);
-
-//    glTexImage2D(GL_TEXTURE_2D, 0,
-//                 GL_RGBA, image->columns(), image->rows(), 0,
-//                 GL_RGBA, GL_UNSIGNED_BYTE, blob.data());
-}
-
 int main(int argc, char *argv[])
 {
     if( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
@@ -368,15 +202,7 @@ int main(int argc, char *argv[])
     }
 
     printf("GL version: %s\n", glGetString(GL_VERSION));
-    
-//    LoadAndCompileShaders();
-    
-//    LoadAssets();
-//    PrepareIndexBuffer();
-//    PrepareVertexBuffers();
-//    PrepareTextureObjects();
-//    PrepareAndBindVAO();
-    
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     cameraState.pos.z = -5.0f;

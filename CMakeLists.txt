@@ -25,9 +25,10 @@ include_directories(${PROJECT_SOURCE_DIR}/3rdparty/glm)
 
 set(SOURCE_FILES
         source/src/main.cpp
-        source/inc/main.h
         3rdparty/glad/src/glad.c
-        source/src/shader.cpp source/inc/shader.h
+        3rdparty/stb/src/stb_image_impl.cpp
+        source/src/Shader.cpp
+        source/src/Texture.cpp
         )
 
 include_directories(source/inc)
@@ -38,7 +39,7 @@ set(SHADERS
 )
 
 add_executable(3DEngine ${SOURCE_FILES})
-target_link_libraries(3DEngine SDL2main SDL2 ${OPENGL_LIBRARIES} ${GLU_LIBRARIES})
+target_link_libraries(3DEngine SDL2main SDL2-static ${OPENGL_LIBRARIES} ${GLU_LIBRARIES})
 
 install (TARGETS 3DEngine DESTINATION ${PROJECT_SOURCE_DIR}/bin)
 install (FILES ${SHADERS} DESTINATION ${PROJECT_SOURCE_DIR}/bin)
